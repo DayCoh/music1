@@ -1,0 +1,9 @@
+# Netlify configuration for the Anthem Next.js MVP.
+# The official Next.js runtime plugin is auto-installed by Netlify for Next sites;
+# declaring it here makes the setup explicit and reproducible.
+
+[build]
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
