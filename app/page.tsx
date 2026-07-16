@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { STYLE_CATALOG, QUICK_STYLES, ALL_STYLES } from "@/lib/styles";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors the shape returned by our own /api routes — see lib/suno.ts)
@@ -45,11 +46,6 @@ const FAILED_STATUSES = new Set([
 ]);
 
 const OCCASION_PRESETS = ["Birthday", "Anniversary", "Proposal", "Just because"];
-const VIBE_PRESETS = [
-  "Upbeat pop celebration",
-  "Acoustic & heartfelt",
-  "Cinematic & epic",
-];
 const MODEL_OPTIONS: { value: SunoModel; label: string }[] = [
   { value: "V4", label: "V4 — classic" },
   { value: "V4_5", label: "V4.5 — recommended" },
@@ -384,6 +380,14 @@ function WizardCard({
   onNext: () => void;
   onBack: () => void;
 }) {
+  const [styleQuery, setStyleQuery] = useState("");
+
+  const styleMatches = useMemo(() => {
+    const q = styleQuery.trim().toLowerCase();
+    if (!q) return null;
+    return ALL_STYLES.filter((s) => s.toLowerCase().includes(q)).slice(0, 60);
+  }, [styleQuery]);
+
   return (
     <div className="card phase-enter">
       <div className="progress" role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={TOTAL_STEPS} aria-label={`Step ${step + 1} of ${TOTAL_STEPS}`}>
@@ -472,38 +476,110 @@ function WizardCard({
         {step === 2 && (
           <fieldset style={{ border: "none", padding: 0, margin: 0 }}>
             <legend className="step-eyebrow">Step 3 of {TOTAL_STEPS}</legend>
-            <h1 className="step-title">What vibe are you going for?</h1>
+            <h1 className="step-title">What style should it be?</h1>
             <p className="step-help">
-              Describe the feeling in your own words, or pick a starting point.
+              Pick any style from around the world — or describe your own. Every
+              tradition is welcome.
             </p>
 
             <div className="field">
               <label className="field-label" htmlFor="vibe">
-                Vibe
+                Your style
               </label>
               <input
                 id="vibe"
                 className="text-input"
                 type="text"
-                placeholder="e.g. Fun, warm, a little silly"
+                placeholder="e.g. Afrobeats, Mariachi, Lo-fi, or your own words"
                 value={wizard.vibe}
                 onChange={(e) => update("vibe", e.target.value)}
                 autoFocus
               />
-              <div className="chip-row" role="group" aria-label="Vibe presets">
-                {VIBE_PRESETS.map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    className={
-                      "chip" + (wizard.vibe === preset ? " is-selected" : "")
-                    }
-                    aria-pressed={wizard.vibe === preset}
-                    onClick={() => update("vibe", preset)}
-                  >
-                    {preset}
-                  </button>
-                ))}
+
+              {!wizard.vibe && (
+                <div
+                  className="chip-row"
+                  role="group"
+                  aria-label="Popular starting points"
+                >
+                  {QUICK_STYLES.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className="chip"
+                      onClick={() => update("vibe", preset)}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="field" style={{ marginTop: "var(--space-4)" }}>
+                <label className="field-label" htmlFor="style-search">
+                  Browse styles from around the world
+                </label>
+                <input
+                  id="style-search"
+                  className="text-input"
+                  type="search"
+                  placeholder="Search 200+ styles — country, culture, genre…"
+                  value={styleQuery}
+                  onChange={(e) => setStyleQuery(e.target.value)}
+                />
+              </div>
+
+              <div
+                className="style-catalog"
+                role="group"
+                aria-label="Music styles"
+              >
+                {styleMatches ? (
+                  styleMatches.length > 0 ? (
+                    <div className="chip-row">
+                      {styleMatches.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          className={
+                            "chip" + (wizard.vibe === s ? " is-selected" : "")
+                          }
+                          aria-pressed={wizard.vibe === s}
+                          onClick={() => update("vibe", s)}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="style-empty">
+                      No preset matches “{styleQuery}” — you can still type it
+                      above and we’ll use it.
+                    </p>
+                  )
+                ) : (
+                  STYLE_CATALOG.map((group) => (
+                    <div key={group.region} className="style-group">
+                      <h2 className="style-group-title">{group.region}</h2>
+                      <div className="chip-row">
+                        {group.styles.map((s) => (
+                          <button
+                            key={`${group.region}-${s}`}
+                            type="button"
+                            className={
+                              "chip" +
+                              (wizard.vibe === s ? " is-selected" : "")
+                            }
+                            aria-pressed={wizard.vibe === s}
+                            onClick={() => update("vibe", s)}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </fieldset>
@@ -537,7 +613,10 @@ function WizardCard({
                   <span className="field-label" id="instrumental-label">
                     Instrumental only
                   </span>
-                  <p className="hint">No vocals — just music.</p>
+                  <p className="hint">
+                    By default your song comes with sung, original lyrics. Turn
+                    this on for music with no vocals.
+                  </p>
                 </div>
                 <button
                   type="button"

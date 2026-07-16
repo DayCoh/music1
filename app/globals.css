@@ -866,6 +866,37 @@ a {
   line-height: 1.5;
 }
 
+/* --- global style catalog picker (wizard step 3) --- */
+.style-catalog {
+  margin-top: var(--space-3);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--space-3);
+  border: 1px solid rgba(253, 248, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.18);
+  -webkit-overflow-scrolling: touch;
+}
+
+.style-group + .style-group {
+  margin-top: var(--space-4);
+}
+
+.style-group-title {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.style-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
 .app-footer {
   margin-top: var(--space-3);
   display: flex;

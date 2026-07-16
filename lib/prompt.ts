@@ -33,17 +33,21 @@ export function buildGenerateBody(
   const vibe = input.vibe?.trim() || "warm and heartfelt";
   const details = input.details?.trim();
 
-  // Lead with the vibe so Suno matches the musical style, then who + occasion,
-  // then any personal details. Suno generates ORIGINAL lyrics from this brief.
+  // Lead with an explicit style label so Suno strongly matches the chosen genre
+  // (any world style works), then who + occasion, then personal details.
+  // Suno generates ORIGINAL lyrics from this brief (non-custom mode).
   const parts = input.instrumental
     ? [
-        `A ${vibe} instrumental piece for ${recipient}, evoking ${occasion}.`,
+        `Style: ${vibe}.`,
+        `An instrumental piece for ${recipient}, evoking ${occasion}.`,
         details ? `Mood and imagery: ${details}.` : "",
       ]
     : [
-        `A ${vibe} song for ${recipient}, celebrating ${occasion}.`,
+        `Style: ${vibe}.`,
+        `A song for ${recipient}, celebrating ${occasion}.`,
         details ? `Weave in these personal details: ${details}.` : "",
-        `Write original, heartfelt, personal lyrics that tell their story.`,
+        `Write original, heartfelt, personal lyrics that tell their story,`,
+        `authentic to the ${vibe} tradition.`,
       ];
 
   const prompt = clamp(parts.filter(Boolean).join(" "), MAX_DESCRIPTION);
