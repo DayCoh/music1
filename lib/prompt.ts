@@ -1,5 +1,5 @@
 // Turns plain-language wizard answers into Suno generation parameters.
-// No music jargon leaks to the user — they answer human questions; we shape the prompt.
+// No music jargon leaks to the user — they answer human questions; we shape the brief.
 
 import type { GenerateParams, SunoModel } from "./suno";
 
@@ -12,49 +12,49 @@ export interface WizardInput {
   model: SunoModel;
 }
 
-// Max lengths per Suno docs for V4_5+/V5 models (we stay well under).
-const MAX_TITLE = 100;
-const MAX_STYLE = 1000;
-const MAX_PROMPT = 5000;
+// We use Suno's NON-custom ("description") mode: the prompt is a brief and Suno
+// WRITES original lyrics from it (per the docs: "lyrics will be automatically
+// generated based on it, not strictly matching the input") and composes music
+// that fits. Custom mode, by contrast, sings the prompt verbatim — which is not
+// what we want. Non-custom mode caps the prompt at 500 characters.
+const MAX_DESCRIPTION = 500;
 
 function clamp(s: string, max: number): string {
   const t = (s ?? "").trim();
-  return t.length > max ? t.slice(0, max) : t;
+  return t.length > max ? t.slice(0, max).trim() : t;
 }
 
-export function buildGenerateBody(input: WizardInput, callBackUrl: string): GenerateParams {
+export function buildGenerateBody(
+  input: WizardInput,
+  callBackUrl: string
+): GenerateParams {
   const occasion = input.occasion?.trim() || "a special moment";
   const recipient = input.recipient?.trim() || "someone special";
   const vibe = input.vibe?.trim() || "warm and heartfelt";
   const details = input.details?.trim();
 
-  const title = clamp(`${occasion} for ${recipient}`, MAX_TITLE);
-  const style = clamp(vibe, MAX_STYLE);
+  // Lead with the vibe so Suno matches the musical style, then who + occasion,
+  // then any personal details. Suno generates ORIGINAL lyrics from this brief.
+  const parts = input.instrumental
+    ? [
+        `A ${vibe} instrumental piece for ${recipient}, evoking ${occasion}.`,
+        details ? `Mood and imagery: ${details}.` : "",
+      ]
+    : [
+        `A ${vibe} song for ${recipient}, celebrating ${occasion}.`,
+        details ? `Weave in these personal details: ${details}.` : "",
+        `Write original, heartfelt, personal lyrics that tell their story.`,
+      ];
 
-  // Lyric direction for a vocal track.
-  const promptParts = [
-    `Write a heartfelt, original song for ${recipient} to celebrate ${occasion}.`,
-    `The mood should feel ${vibe}.`,
-    details ? `Weave in these personal details: ${details}.` : "",
-    `Make it feel personal, uplifting, and unmistakably theirs.`,
-  ].filter(Boolean);
+  const prompt = clamp(parts.filter(Boolean).join(" "), MAX_DESCRIPTION);
 
-  const prompt = clamp(promptParts.join(" "), MAX_PROMPT);
-
-  // customMode: true gives us control over title + style; prompt carries the lyric direction.
-  const body: GenerateParams = {
-    customMode: true,
+  // customMode:false → Suno authors the lyrics itself and picks fitting music.
+  // In this mode style/title are not sent (the description carries the vibe).
+  return {
+    customMode: false,
     instrumental: input.instrumental,
     model: input.model,
-    style,
-    title,
+    prompt,
     callBackUrl,
   };
-
-  // prompt (lyric direction) is required for vocal tracks; omitted for instrumental.
-  if (!input.instrumental) {
-    body.prompt = prompt;
-  }
-
-  return body;
 }
