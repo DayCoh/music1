@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   title: "Anthem — Be your own favorite artist",
   description:
     "Describe a song in plain language and get a finished vocal track in about a minute — yours to keep and share.",
+  authors: [{ name: "Dayna" }],
+  creator: "Dayna",
 };
 
 export const viewport: Viewport = {

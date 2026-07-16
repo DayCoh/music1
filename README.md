@@ -55,3 +55,7 @@ npm run dev                  # http://localhost:3000
 - Provider is the **unofficial** sunoapi.org — a throwaway MVP dependency (see `.claude/CLAUDE.md`). Not for production without sanctioned upstream access.
 - Songs are AI-generated: the UI says "yours to keep and share," not "you own the copyright."
 - Models available: `V4`, `V4_5` (default), `V4_5PLUS`, `V4_5ALL`, `V5`, `V5_5`.
+
+## Credits
+
+Designed & developed by **Dayna**.

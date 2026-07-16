@@ -351,6 +351,16 @@ export default function Page() {
         Your song is yours to keep and share — always private unless you choose
         to share it.
       </p>
+
+      <footer className="app-footer">
+        <span className="app-footer-brand">Anthem</span>
+        <span className="app-footer-dot" aria-hidden="true">
+          ·
+        </span>
+        <span className="app-footer-credit">
+          Designed &amp; developed by <strong>Dayna</strong>
+        </span>
+      </footer>
     </div>
   );
 }
